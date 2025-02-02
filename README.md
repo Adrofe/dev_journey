@@ -5,6 +5,6 @@ Repositorio para guardar apuntes de libros, cursos, videos sobre programación y
 ## Índice
 
 1. **Libros**
-   - [Código Sostenible](libros\1_código_sostenible\codigo_sostenible.md)
+   - [Código Sostenible](libros/codigo_sostenible/codigo_sostenible.md)
 2. **Cursos**
 3. **Otros**
