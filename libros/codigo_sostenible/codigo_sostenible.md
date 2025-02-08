@@ -10,6 +10,7 @@
     - [La degeneración del código](#la-degeneración-del-código)
     - [¿Por qué es tan importante la sostenibilidad?](#por-qué-es-tan-importante-la-sostenibilidad)
     - [Las personas primero](#las-personas-primero)
+  - [2. Refactorización](#2-refactorización)
 
 ## 1. ¿Qué es código sostenible?
 
@@ -35,3 +36,17 @@ La calidad del código es importantísima para la sostenibilidad del desarrollo,
 entre las personas es todavía más importante**. Un grupo de personas que trabaja en equipo siempre llegará más lejos que un individuo, por más voluntad que este le ponga. **El cuidado del código no puede estar por encima del cuidado de las relaciones y las personas**.
 
 La falta de **inteligencia emocional, de empatía, de actitud, de conocimiento, de capacitación**… son las **principales amenazas** de los proyectos; son incluso la principal amenaza para cualquier organización. Un lema que me gusta recordar es, *«firme con el asunto, pero flexible con la persona»*.
+
+## 2. Refactorización
+Estas **pequeñas mejoras de legibilidad** que aplicamos al código se conocen como **refactorización o refactoring**.
+  - Conforme he terminado de escribir un bloque y funciona, **lo vuelvo a leer** buscando si se puede escribir de forma más explícita.
+  - Cada día al empezar la jornada,** dedico diez minutos a leer el código del día anterior**, y para mi sorpresa, a veces me da la sensación de que lo hubiera escrito otra persona. Lleva muy poco tiempo aplicar cambios pequeños y seguros con el apoyo de un IDE.
+  - **Conforme he terminado la funcionalidad** (tarea, requisito, historia de usuario…), **repaso todo el código de la misma**, buscando posibles sorpresas que haya podido dejar.
+  - Generalmente, programo con otra persona (pair programming). Si la persona que escribió el código necesita explicárselo a la otra, ella
+misma se da cuenta de cómo lo puede mejorar. Por otro lado, si la persona que está leyendo el código de la compañera no lo entiende, aprovecha para preguntar y juntas lo mejoran.
+
+Si en un proyecto nuevo **practicas refactorización a diario**, podrás seguir dedicando la mayor parte del tiempo a implementar la funcionalidad. El tiempo refactorizando no será significativo. La táctica que recomiendo para aplicar refactorización es **priorizar aquellos cambios que producen el máximo retorno de inversión con el menor riesgo.**
+  - **Sustituir un nombre** por otro más apropiado aumenta significativamente la expresividad, además de ser un cambio trivial con mínimo riesgo.
+  
+Piensa en la refactorización como en una tarea cotidiana tal como dejar tu escritorio recogido, en lugar de abordarla como una macro reforma de una casa.
+El código que ha sido desarrollado sin el apoyo de test, es típicamente difícil o imposible de testar, con lo cual entramos en un círculo vicioso de ausencia de refactorización y de test. **Borrar y volver a escribir hasta que el código sea legible es mucho más barato que seguir adelante con un código enrevesado**.
