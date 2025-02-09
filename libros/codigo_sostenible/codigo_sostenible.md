@@ -11,6 +11,15 @@
     - [¿Por qué es tan importante la sostenibilidad?](#por-qué-es-tan-importante-la-sostenibilidad)
     - [Las personas primero](#las-personas-primero)
   - [2. Refactorización](#2-refactorización)
+  - [3. Fundamentos](#3-fundamentos)
+    - [Diseñar código para el presente](#diseñar-código-para-el-presente)
+      - [**Ejemplo**: generalizaciones prematuras y cargantes:](#ejemplo-generalizaciones-prematuras-y-cargantes)
+    - [Diseñar para el uso concreto, no para reutilizar](#diseñar-para-el-uso-concreto-no-para-reutilizar)
+    - [Las reglas del código sostenible](#las-reglas-del-código-sostenible)
+      - [1. El código está cubierto por test](#1-el-código-está-cubierto-por-test)
+      - [2. Los test son sostenibles](#2-los-test-son-sostenibles)
+      - [3. Las abstracciones tienen sentido](#3-las-abstracciones-tienen-sentido)
+      - [4. Hay una intencionalidad explícita](#4-hay-una-intencionalidad-explícita)
 
 ## 1. ¿Qué es código sostenible?
 
@@ -50,3 +59,103 @@ Si en un proyecto nuevo **practicas refactorización a diario**, podrás seguir 
   
 Piensa en la refactorización como en una tarea cotidiana tal como dejar tu escritorio recogido, en lugar de abordarla como una macro reforma de una casa.
 El código que ha sido desarrollado sin el apoyo de test, es típicamente difícil o imposible de testar, con lo cual entramos en un círculo vicioso de ausencia de refactorización y de test. **Borrar y volver a escribir hasta que el código sea legible es mucho más barato que seguir adelante con un código enrevesado**.
+
+## 3. Fundamentos
+### Diseñar código para el presente
+En el mundo de la programación existe una idea muy arraigada y extendida, que es la de escribir el código tan genérico, abstracto y complejo, que pueda resolver los problemas del futuro sin tenerlo que cambiar. Escribir código para el futuro es un concepto mal entendido. 
+
+**El código más preparado para el futuro resulta ser el que se ciñe a lo estrictamente necesario para cumplir con los requisitos del presente.** Es minimalista, simple, conciso, concreto, explícito y está bien respaldado por baterías de test automáticos.
+
+**Los requisitos no funcionales deben cumplirse también en el presente y soportar lo que se sabe con certeza que sucederá en el futuro próximo**. Es difícil encontrar el punto óptimo de inversión en las características no funcionales del software; **se necesita que las áreas de negocio y de tecnología estén muy alineadas y entiendan mutuamente** las consecuencias de sus decisiones.
+
+Hay una táctica que arruina el código: *«Ya que estoy escribiendo estas líneas por aquí, implemento algo más que no me han pedido, por si acaso me lo piden luego»*. Sale mucho más barato consensuarlo con las personas que entienden el negocio. 
+
+Al software le ocurre lo contrario que a un gran proyecto convencional, **si el código es simple, cuesta muy poco hacer rectificaciones o ampliaciones.** Trabajamos con unos materiales extremadamente maleables, el cerebro humano y el código fuente. Cuanto más flexibles sean estos materiales, más fáciles y baratas resultarán las obras. **Cuanto más sostenible sea el diseño del software, más valor tendrá en el presente y en el futuro.**
+
+#### **Ejemplo**: generalizaciones prematuras y cargantes:
+Uno que he visto varias veces es la validación de fortaleza de una contraseña:
+```java
+public boolean isStrongPassword(String password) {
+    return isLongEnough(password) &&
+           containsLowercaseChar(password) &&
+           containsUppercaseChar(password) &&
+           containsSymbols(password);
+}
+```
+Es un código sencillo, que no obliga a quien lo lee a estar computando mentalmente, sino que se lee como si fuera un libro. Aun así, hay quien decide que, de cara al futuro, es mejor implementar un motor de reglas de validación con inyección de dependencias, configurable mediante ficheros xml o yaml, para cambiar el comportamiento de la validación sin tocar el código. 
+
+Se debe al afán por diseñar la solución última, la que aguante el paso de los siglos. En realidad, lo que conseguimos con estas soluciones cargantes es complicarle la vida a las personas que toman el relevo (que podría ser uno mismo pasados unos meses o años).
+
+### Diseñar para el uso concreto, no para reutilizar
+**El otro gran malentendido es el de escribir el código pensando en que pueda ser reutilizado**. Puede ser productivo pensar en la reutilización cuando el código ya ha sido usado, una vez que se ha puesto en producción y está prestando un servicio a usuarios reales, **pero hacerlo antes de que se haya usado nunca es arriesgarse a complicar innecesariamente el diseño.** Si nos empeñamos, conseguiremos reutilizar código, aunque perderemos flexibilidad a cambio.
+
+Hoy en día, **escribir líneas de código nuevas tiene muy poco coste**, el cuello de botella de los proyectos no está en el teclado. **Lo que supone más coste es comprender y modificar las líneas de código existentes**.
+
+Quien programa, deja más clara su intención si el vocabulario que usa en el código es concreto y expresivo. Quien luego lo lee, lo entiende mejor si averigua cuál era la intención de quien lo programó. Si la intención no está clara, o directamente se escribe sin intención, resulta muy confuso entender el código.
+
+### Las reglas del código sostenible
+Damos demasiadas vueltas de tuerca y acabamos diseñando sistemas excesivamente complicados. **Las cuatro reglas del diseño simple de Kent Beck**, que dicen que
+el código debe:
+1. **Pasar los test**: para que los test puedan pasar, debe haber test. Todavía hay demasiados proyectos que no tienen test y demasiados equipos que los ven como un extra idílico, inalcanzable o prescindible.
+2. **Revelar la intención**: el código debe estar escrito con una intención notable.
+3. **No contener duplicidad**.
+4. **Tener el menor número de elementos posible**.
+
+#### 1. El código está cubierto por test
+**Los test automáticos son imprescindibles en todo código que se considere de calidad**.  Si no se ha desarrollado una cobertura de test adecuada, no hay ninguna garantía de que funcione. **No existe el código de calidad sin test.**
+
+Modificar código que no está respaldado por una sólida batería de pruebas automatizadas, entraña un elevadísimo riesgo de estropear múltiples de sus funciones. **Las funcionalidades más importantes deberían contar con un porcentaje de cobertura cercano al 100 %.** En mi experiencia, cuando desarrollamos productos con TDD, la cobertura suele estar en torno al 90 %. Cualquier IDE hoy en día sirve para medir la cobertura, pero también están las herramientas de análisis estático de código, que miden este y otros parámetros.
+
+#### 2. Los test son sostenibles
+Sí, esta definición es recursiva; simplemente quiere decir que **el código de los test tiene la misma importancia que el código que se ejecuta en producción**, por lo que su sostenibilidad es igualmente indispensable.
+
+Lo que importa es que el **código de prueba sea igual de conciso, expresivo y concreto, que cualquier otro código que escribamo**s; que los nombres de las pruebas hablen del caso de uso con un lenguaje de negocio; que **cada test ejercite un único comportamiento del sistema, para que solo falle por un motivo**.
+
+#### 3. Las abstracciones tienen sentido
+Cuando utilizamos un lenguaje de programación, cada palabra del código cuyo nombre podemos elegir es un concepto que introducimos. **Las abstracciones son poderosas a la par que imprecisas**, de hecho, uno de los problemas clásicos de la toma de requisitos para un nuevo proyecto es que sean demasiado abstractos y cada persona tenga ideas distintas de lo que se quiere.
+
+Poner nombres es una de las tareas más duras de la programación y todo el mundo piensa que se le da mal. Te invito a que deseches la idea de que siempre se te va a dar mal poner nombres, porque entonces no te esfuerzas por buscarlos. **El impacto que los nombres tienen en el código es radical**, ya que cada nombre es una abstracción que determina el concepto de solución que se crea la persona que luego lo lee.
+
+**Cuando no somos capaces de nombrar un nuevo elemento** (sea un método, una variable, una clase o cualquier otra cosa), **puede que en realidad esa abstracción no tenga sentido y que sea mejor no crearla** (o sea, no extraer ese método, variable, clase…).
+
+Ejemplo de típicas variables que no dicen nada (“aux”, “tmp”, “str”,…):
+``` java
+String aux = firstTransformation(payload);
+String result = secondTransformation(aux);
+return result;
+```
+Se puede poner como:
+``` java
+return secondTransformation(firstTransformation(payload));
+```
+
+**Esto no significa que siempre debamos tener todo en una línea**, cuidado con sacar las cosas de contexto, que hay mil situaciones en las que el código se lee mejor partiendo la operación en varias líneas.
+
+**Cuando el nombre de una función/método es adecuado, no tengo la necesidad de entrar a leer su contenido para entender lo que va a hacer**. Por tanto, otra pista sobre la idoneidad de una abstracción es si somos capaces de encontrarle sentido sin tener que ir más allá en el código, buscando información adicional.
+
+Por eso, algunas personas preferimos apoyarnos en el diseño emergente, basado en la refactorización, y esperar a que el código haya alcanzado buen grado de funcionalidad para introducir una abstracción. **Hasta que el código no revele una estructura que case bien con una posible abstracción, de manera sugerente, prefiero no hacerla.**
+
+En la última década se ha demonizado la duplicidad en el código, pero **en realidad el principio DRY (Don’t repeat yourself) , no se refiere a líneas de código que son iguales, sino a evitar resolver problemas por duplicado.**
+
+**Los problemas de repetirnos son mayores cuanto más grandes/complejos son los artefactos y cuantas más veces se repita la solución por diferentes módulos del código**. Por ejemplo, si se ha implementado un validador de datos de entrada/salida para un módulo del código, evita escribir otro para los otros módulos. Que en el proyecto haya dos validadores diferentes es confuso para quien los tenga que usar o modificar, genera una incertidumbre que puede disuadir a cualquiera de hacer cambios. Si les da miedo tocar, no harán tareas de mejora de la legibilidad y tendremos un monstruo de dos cabezas. Cuando se detecte un problema, habrá que corregirlo en dos o más sitios. **Cuanto más crezcan los artefactos repetidos, peor. Cuanto más dispersa esté la repetición, peor (mejor tres repeticiones en
+un fichero que una repetición en tres ficheros diferentes).**
+
+Lo peor en este tipo de códigos de la vieja escuela suelen ser las abreviaturas de los nombres (que son crípticas) y los números mágicos (magic numbers).
+
+**Generalizar código es más fácil que deshacer una generalización**. Si tengo diez líneas de código iguales consecutivas, resulta muy fácil introducir un bucle que contiene una sola línea e itera diez veces. Lo contrario ya no es tan fácil, porque la carga cognitiva de comprender el bucle, con sus intervalos, es mayor. Implica mayor probabilidad de equivocarme e introducir un bug. **Cuanto más compleja sea la estructura que hemos construido, cuanta más complejidad ciclomática tenga, más esfuerzo cognitivo nos exigirá, lo que se traduce en mayor resistencia al cambio**.
+
+**Ante la duda, es preferible posponer las generalizaciones y la creación de nuevas abstracciones**. El mejor momento para hacerlo suele ser cuando hemos terminado de implementar un requisito, todos los test pasan y volvemos a leer el código en busca de obviedades que puedan ser refactorizadas.
+
+#### 4. Hay una intencionalidad explícita
+Cuando heredamos código que hay que modificar, bien para añadir funcionalidad o bien para corregir defectos, lo primero que hacemos es intentar comprenderlo Buscando irregularidades, prestando atención a todo lo extraño.
+
+Si existe un mecanismo para el acceso a datos que se usa en toda la aplicación, salvo en un punto, entonces nos hacemos la misma pregunta sobre ese punto, *¿por qué habrán dejado ese código accediendo a la base de datos de otra forma?* Cada irregularidad que encontramos nos va produciendo un poquito más de incertidumbre y de miedo a tocar el código.
+
+**Desgraciadamente, la realidad dista mucho; no acostumbramos a poner intención al programar**, con lo cual, esa clase estaba en
+minúscula por despiste y ese código accedía a los datos, porque la tarea fue implementada por otra persona que ignoraba la existencia de la capa de acceso a datos. En realidad, el código está plagado de accidentes fruto de las prisas, el desconocimiento, la inconsciencia, el menosprecio, los problemas de comunicación, la falta de atención, de concentración…
+
+**La consecuencia de los accidentes es el empobrecimiento paulatino del código.** Ya cuando el caos termina reinando, la gente se acostumbra y se deja llevar por la inercia del «todo vale». Llegados a ese punto, al equipo le parece normal escribir código sin cuidado, haciendo ñapas por todos lados como si fuera lo correcto. **Lo habitual es que el código vaya a peor cuando empieza a ser caótico.**
+
+De las muchas formas que hay de resolver un problema con código, **procura elegir aquella en la que tu intención quede lo más clara posible**, que resulte evidente para futuros lectores del código.
+
+**Echarle la culpa a las personas de los desastres en el código es como escupir para arriba; no te lo recomiendo, no soluciona el problema y estropea las relaciones**. Cuando nos toca trabajar con un código heredado, tenemos la oportunidad de limpiarlo, al menos hasta dejarlo un poquito mejor de lo que lo encontramos. Lo mejor que podemos hacer para sumar valor es escribir el código con intencionalidad, ayudando a otras personas a darse cuenta de lo importante que es mediante el ejemplo.
