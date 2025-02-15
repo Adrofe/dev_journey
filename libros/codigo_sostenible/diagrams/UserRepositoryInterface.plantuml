@@ -1,0 +1,20 @@
+@startuml UserRepositoryInterface Example
+
+interface UserRepository {
+  +findUser(userId)
+  +saveUser(user)
+}
+
+class PostgresUserRepository {
+  +findUser(userId)
+  +saveUser(user)
+}
+
+class MongoUserRepository {
+  +findUser(userId)
+  +saveUser(user)
+}
+
+UserRepository <|.. PostgresUserRepository
+UserRepository <|.. MongoUserRepository
+@enduml

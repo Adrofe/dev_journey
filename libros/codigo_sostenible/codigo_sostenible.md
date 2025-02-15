@@ -20,6 +20,10 @@
       - [2. Los test son sostenibles](#2-los-test-son-sostenibles)
       - [3. Las abstracciones tienen sentido](#3-las-abstracciones-tienen-sentido)
       - [4. Hay una intencionalidad explícita](#4-hay-una-intencionalidad-explícita)
+  - [4. Técnicas para elegir nombres](#4-técnicas-para-elegir-nombres)
+    - [Nombres fáciles de pronunciar](#nombres-fáciles-de-pronunciar)
+    - [Sin información técnica](#sin-información-técnica)
+    - [Nombres concretos](#nombres-concretos)
 
 ## 1. ¿Qué es código sostenible?
 
@@ -159,3 +163,31 @@ minúscula por despiste y ese código accedía a los datos, porque la tarea fue 
 De las muchas formas que hay de resolver un problema con código, **procura elegir aquella en la que tu intención quede lo más clara posible**, que resulte evidente para futuros lectores del código.
 
 **Echarle la culpa a las personas de los desastres en el código es como escupir para arriba; no te lo recomiendo, no soluciona el problema y estropea las relaciones**. Cuando nos toca trabajar con un código heredado, tenemos la oportunidad de limpiarlo, al menos hasta dejarlo un poquito mejor de lo que lo encontramos. Lo mejor que podemos hacer para sumar valor es escribir el código con intencionalidad, ayudando a otras personas a darse cuenta de lo importante que es mediante el ejemplo.
+
+## 4. Técnicas para elegir nombres
+Los nombres son adecuados cuando consiguen que el diseño quede intuitivo y simple.
+
+### Nombres fáciles de pronunciar
+Los nombres de las variables y del resto de elementos deberían ser pronunciables en el idioma que sea que hayamos escogido.
+
+Si utilizamos la regla de nombres pronunciables, **no podemos comernos letras de las palabras para acortarlas**. **Los nombres han de ser tan largos como sea necesario para representar el concepto adecuado**. Sería extraño y seguramente inadecuado un nombre con ochenta caracteres, pero no hay problema si tiene diez, veinte o incluso más. Ya no existen las limitaciones de hace décadas en cuanto a la memoria y a los compiladores, que obligaban a utilizar variables con pocas letras. **Que sea un nombre excesivamente largo, podría indicar que la abstracción no es buena.**
+
+**Los índices de los bucles pueden ser la excepción de la regla**, a los que típicamente nombramos con letras, i, j, k, y queda más legible que usar palabras completas. Es preferible no quedarse cortos con los nombres, estirarse lo que haga falta. Lógicamente, sin ser redundantes ni exagerados. **El contexto tiene un gran impacto sobre el estilo**. Si el código no es para un libro y no hay una restricción real que impacte en el consumo de recursos o en algún otro atributo de calidad como el rendimiento, no hay necesidad de abreviar, a no ser que queramos presumir de escribir algo que nadie más puede entender.
+
+### Sin información técnica
+El hecho de que un cierto framework utilice unas convenciones de nombrado, no significa que cuando lo utilizamos para construir nuestras aplicaciones debamos seguirlas. Un ejemplo típico es el framework *.Net*, cuyas interfaces empiezan con una letra *«I» mayúscula*, es decir, la primera letra de la palabra *Interface (IList, ISet…)*.
+
+En general, **debemos evitar reflejar información sobre tipos en los nombres**. Por ejemplo, evitar que diga que el tipo de una variable string, interfaz, clase abstracta, implementación de una interfaz… **La razón para desaconsejar nombres que contienen información técnica es que nos impiden elegir nombres con un nivel de abstracción adecuado.**
+
+**Si te cuesta encontrar dos nombres diferentes para interfaz e implementación y te conformas con seguir este estilo**, quizá te pierdas la posibilidad de encontrar un diseño mejor. La dificultad a la hora de nombrar, a menudo, nos brinda pistas sobre la calidad de nuestras abstracciones y sobre el diseño del software. La palabra reservada Interface, se utiliza cuando varias clases comparten una misma interfaz, en cuyo caso es fácil encontrar nombres para dicha interfaz y sus implementaciones (ej: UserRepository, PostgresUserRepository, MongoUserRepository).
+
+![UserRepository Diagram](./diagrams/UserRepositoryInterface.png)
+
+**Al emplear nombres que incluyen información técnica sobre tipos** (por ejemplo, usando prefijos/sufijos como Abstract o Base), tenemos la falsa sensación de estar haciendo el código más legible, cuando **en realidad le estamos dando información redundante que ya provee el IDE**. Lo importante no es saber que una variable es de tipo cadena, **sino entender para qué se usa, qué función cumple en el conjunto del programa**. La información sobre los tipos o incluso sobre los patrones utilizados (usar sufijos Singleton, Facade…), no añade abstracción con semántica de negocio, simplemente ofrece una descripción técnica. Recurre a estas salidas cuando no te quede más remedio o como solución temporal.
+
+### Nombres concretos
+Un truco es pensar si un nombre es aplicable a muchos elementos a la vez, en cuyo caso quizás debamos descartarlo. *Ejemplos de nombres demasiado genéricos:*
+
+- *Helper, manager, generator, engine, tool, service, utils, process, execute, input*
+
+Además, hay casos donde algunas de estas palabras de ejemplo tienen sentido, como la palabra execute, cuando implementamos un patrón command; la palabra service, cuando nos apoyamos en Domain-driven design. **No se trata de una lista de palabras prohibidas, sino de una idea; evitar los nombres que valen para todo**.
