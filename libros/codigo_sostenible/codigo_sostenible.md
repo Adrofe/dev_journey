@@ -24,6 +24,12 @@
     - [Nombres fáciles de pronunciar](#nombres-fáciles-de-pronunciar)
     - [Sin información técnica](#sin-información-técnica)
     - [Nombres concretos](#nombres-concretos)
+    - [Nombres que forman frases](#nombres-que-forman-frases)
+    - [Sin alias](#sin-alias)
+    - [Nombres que se apoyan en el contexto](#nombres-que-se-apoyan-en-el-contexto)
+    - [Distinguir sustantivos, verbos y adjetivos](#distinguir-sustantivos-verbos-y-adjetivos)
+    - [Darle nombre a los valores literales](#darle-nombre-a-los-valores-literales)
+    - [Renombrar al día siguiente](#renombrar-al-día-siguiente)
 
 ## 1. ¿Qué es código sostenible?
 
@@ -191,3 +197,131 @@ Un truco es pensar si un nombre es aplicable a muchos elementos a la vez, en cuy
 - *Helper, manager, generator, engine, tool, service, utils, process, execute, input*
 
 Además, hay casos donde algunas de estas palabras de ejemplo tienen sentido, como la palabra execute, cuando implementamos un patrón command; la palabra service, cuando nos apoyamos en Domain-driven design. **No se trata de una lista de palabras prohibidas, sino de una idea; evitar los nombres que valen para todo**.
+
+### Nombres que forman frases
+La quinta restricción tiene como objetivo que cada línea de código sea lo más parecida a una frase con sentido en lenguaje natural:
+
+``` java
+if (isPaidInvoice)
+...
+if (containsNumbers)
+...
+if (areThereItems)
+...
+if (isNotBlank(page))
+...
+while (maximumCapacityHasNotBeenReached)
+...
+```
+
+**Una sana convención extendida es la de utilizar prefijos de tipo pregunta, para expresiones o variables tipo boolean**: is, has, does, are, contains, will, should… Incluso a veces se utilizan las negaciones isNot, doesnt, hasnt…, porque puede resultar más claro leer en lenguaje natural, que los signos de negación combinados con otros operadores lógicos.
+
+En cambio, **los operadores lógicos and y or no son recomendables para los nombres**, es mejor utilizar los propios operadores del lenguaje. Por ejemplo, un método que se llame saveUserAndSendEmail, está claramente realizando dos acciones a la vez. **Si las dos acciones han de realizarse en bloque, seguramente existe un nombre de dominio más adecuado** para la operación (ej: registerUser), pero si no lo hay, el propio nombre nos indica que el diseño incumple el principio de responsabilidad única.
+
+### Sin alias
+**Evita los sobrenombres. Utilizar nombres distintos para el mismo concepto resulta confuso, cuando no redundante**. Ejemplo:
+
+``` java
+public String[] partirPorComas(String texto){
+  return texto.split(',');
+}
+```
+Cualquiera que trabaje con cadenas habitualmente sabe que split significa partir, no aporta nada traducirlo o utilizar un sinónimo para la operación.
+
+**Los alias son especialmente peligrosos cuando nos inventamos nombres nuevos para referirnos a un único concepto**. Por ejemplo, si en términos de negocio se habla de «pagar una factura», el código no debería hablar en términos de «procesar una factura». Por ejemplo, si como experto de negocio hablase de filtrar facturas que no tienen puesto un email de contacto, el código fuente no debería hablar en términos de extraer facturas. Filtrar y extraer son operaciones parecidas según el contexto, pero no son lo mismo.
+
+Debemos tener cuidado de no utilizar nombres parecidos para operativas que tienen objetivos diferentes. Ejemplo:
+
+``` javascript
+function parseInteger(expression: string) {
+  return /^\d+$/.test(expression) ? Number(expression) : 0;
+}
+```
+Esta función convierte a número cuando el argumento es de verdad numérico y devuelve cero en otro caso, para no alterar el total de la suma que realiza otra función de este módulo. Los números negativos los está   valuando como cero. Tiene un comportamiento distinto al de parseInt, aunque parece ser el mismo por su nombre.
+
+
+### Nombres que se apoyan en el contexto
+El nombre de un método debe apoyarse en el contexto proporcionado por el nombre de su clase, así como por los nombres de sus argumentos y sus tipos. Al usar tipos específicos del dominio, es más probable que las variables se nombren igual que sus clases. Los tipos específicos atraen nombres de variables acordes a ellos, además de comporta
+miento.
+
+``` java
+public class Expression {/*...*/}
+/*...*/
+public class Calculator {
+public int sumNumbersIn(Expression expression){/*...*/}
+}
+/*...*/
+Expression expression = Expression.parse("1,2,3");
+int sum = calculator.sumNumbersIn(expression);
+```
+
+Los métodos o funciones que tienen más de un parámetro, ya no se prestan tanto a construir frases similares al lenguaje natural. Si hay varios parámetros, lo mejor será que el nombre del método no dependa de ellos, para que la llamada sea muy clara. **Cuantos menos parámetros tenga un método, más probabilidad hay de que su implementación quede simple y de que tenga una única responsabilidad**. He aquí otro indicio de que el énfasis por encontrar nombres significativos enriquece el diseño del software, además de la legibilidad.
+
+``` java
+Amount amount = invoice.amount();
+/*...*/
+Amount total = amount.sum(otherInvoice.amount());
+```
+Sin haber visto la firma de los métodos amount, ni sum, sabes que devuelven valores. De aquí que no haga falta ningún prefijo como **get** (getAmount). Hoy en día, la mayoría de las veces lo usamos como una muletilla que en verdad no aporta nada. **Mi consejo es tratar de evitarla, para ver si así se nos ocurren mejores nombres.**
+
+**En cuanto a los métodos que no devuelven nada, es recomendable poner nombres con un tono imperativo, evidenciando que acarrean efectos secundarios**; si un método no devuelve nada, es porque va a alterar el sistema, ya sea modificando los argumentos, el estado interno de la clase, la base de datos, la cola de mensajes…
+
+``` java
+messenger.send(email);
+eventBus.notifySubscribers(event);
+shoppingCart.add(item);
+userRepository.delete(user);
+```
+
+### Distinguir sustantivos, verbos y adjetivos
+**Típicamente, usamos sustantivos para nombres de clase/módulo/paquete y verbos para nombres de método/función**. Es una convención aceptada independientemente del lenguaje, que con poco esfuerzo nos aporta mucha coherencia. Las clases o módulos expresan conceptos, por eso se recurre a los sustantivos. Los métodos o funciones expresan acciones, por eso se recurre a los verbos.
+
+Al final, **lo que valida la calidad de los nombres es la facilidad con la que entendemos las frases que los contienen**. Por eso, practicar TDD ayuda a nombrar, porque hacemos uso decada método antes de que exista; nos permite darnos cuenta de manera anticipada de la pinta que tendrá nuestro código cuando terminemos la faena.
+
+Otra excepción a la regla son las clases con un solo método, que se utilizan para representar acciones y que, por tanto, llevan la acción verbal en el nombre de la clase:
+
+``` java
+public class PayOrder {
+/*...*/
+public void execute(Order order){/*...*/}
+}
+/*...*/
+public class SendEmail {
+/*...*/
+public void execute(Email email){/*...*/}
+}
+```
+
+**¿Para qué utilizamos los adjetivos? Para describir comportamiento. Los adjetivos describen  muy bien a las interfaces**, así como a los metadatos que utilizamos en metaprogramación. En las interfaces que trae integradas Java o C#, podemos ver buenos ejemplos de adjetivos, sobre todo en las que tienen un solo método. Una interfaz que puede correr o ejecutar, es ejecutable:
+
+``` java
+public interface Runnable {
+  void run();
+}
+```
+
+Más ejemplos típicos de nombres de interfaces son, *Serializable, Comparable, Disposable, Formattable, Throwable*, palabras que funcionan como adjetivos para describir interfaces (de uno o más métodos).
+Si tenemos una interfaz con un solo método update, puede quedar muy bien que su nombre sea Updatable. Si una interfaz tuviera un método cancel, quizá podría llamarse Cancellable. **Cuantos más métodos tenga una interfaz, más dificil será que podamos encontrar adjetivos para ella, con lo que terminaremos recurriendo a sustantivos.**
+
+Puede ayudarnos a cuidar el **principio de segregación de interfaces, es decir, a que cada interfaz tenga un propósito único y exclusivo**.
+
+### Darle nombre a los valores literales
+Anteriormente, escribí que lo mejor para no tener problemas con los nombres es no ponerlos, sin embargo, esto no aplica a las constantes literales. Los números mágicos y otros literales mágicos son una incógnita para quien está leyendo el código.
+
+``` java
+if (invSt == 3) // ???
+...
+if (rtCd == "C1005") // ???
+```
+Mejor así:
+``` java
+if (invoiceStatus == Status.Paid)
+...
+if (returnCode == Error.invalidPostErrorCode)
+```
+**Los tipos enumerados son ideales para agrupar constantes**, no obstante, si resulta artificial o prematuro crear una abstracción para alojar un único valor literal, podemos recurrir a constantes simples.
+
+Las recomendaciones de Oracle para Java siguen siendo las de **utilizar mayúsculas para constantes**, y yo no me opongo a ello, simplemente digo que no me parece necesario porque el compilador y el IDE avisarán de que algo es constante.
+
+### Renombrar al día siguiente
+Las restricciones que acabamos de ver son heurísticas, es decir, estrategias para descubrir mejores nombres, no reglas exactas. Me temo que no existe la fórmula mágica, ya que el nombre perfecto tampoco existe. **Por eso, recurro al refactoring a diario, porque los pequeños ajustes en los nombres me resultan más productivos que bloquearme buscando el nombre ideal a la primera.**
