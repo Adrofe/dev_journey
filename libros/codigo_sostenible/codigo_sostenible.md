@@ -30,6 +30,8 @@
     - [Distinguir sustantivos, verbos y adjetivos](#distinguir-sustantivos-verbos-y-adjetivos)
     - [Darle nombre a los valores literales](#darle-nombre-a-los-valores-literales)
     - [Renombrar al día siguiente](#renombrar-al-día-siguiente)
+  - [5. Principio de menor sorpresa](#5-principio-de-menor-sorpresa)
+    - [La brújula del código sostenible](#la-brújula-del-código-sostenible)
 
 ## 1. ¿Qué es código sostenible?
 
@@ -325,3 +327,93 @@ Las recomendaciones de Oracle para Java siguen siendo las de **utilizar mayúscu
 
 ### Renombrar al día siguiente
 Las restricciones que acabamos de ver son heurísticas, es decir, estrategias para descubrir mejores nombres, no reglas exactas. Me temo que no existe la fórmula mágica, ya que el nombre perfecto tampoco existe. **Por eso, recurro al refactoring a diario, porque los pequeños ajustes en los nombres me resultan más productivos que bloquearme buscando el nombre ideal a la primera.**
+
+## 5. Principio de menor sorpresa
+Procura que el código se comporte como cabe esperar.
+
+``` java
+User user = findUserBy(Id userId);
+```
+¿Podría esperarse que esta línea de código envíe un correo electrónico?, ¿o siquiera que haga alguna escritura en la base de datos? Yo no lo esperaría, me llevaría una sorpresa si lo hiciera.
+
+### La brújula del código sostenible
+**De entre todos los principios de diseño, el de menor sorpresa es para mí el más importante**. Cuando tengo dudas sobre mi diseño, lo que me pregunto es si otra persona que llegue después se sorprenderá con lo que lea. El código debería comportarse tal y como cualquiera esperaría cuando lo lee, sin tener que entrar a mirar el detalle de todas las funciones o métodos privados, ni todas las definiciones de variables.
+
+El lenguaje C, perdió popularidad debido a la aparición de otros lenguajes con gestión de memoria automática, con sistemas de tipos fuertes y con tipos integrados más potentes (como cadenas y colecciones), entre otras cosas porque se reducían las sorpresas.
+
+**El código intuitivo combina las abstracciones con los tipos de datos del lenguaje y con el resto de construcciones del mismo**, de manera coherente. Además, las abstracciones se comportan como cabe esperar. Ejemplos de incoherencias podrían ser:
+``` java
+void findTheBiggestNumber(List<Integer> numbers); 
+
+Integer findTheBiggestNumber(List<Integer> numbers);
+
+//Mal diseño
+Integer findTheBiggestNumber(List<Integer> numbers){
+  Integer biggestNumber = Collections.max(numbers);
+  numbers.remove(biggestNumber);
+  return biggestNumber;
+}
+```
+
+Sorpresa total, le pides a una función que te busque el máximo valor de una lista de números y resulta que borra un elemento de la misma. **Poner un comentario en el código no lo va a mejorar.**
+
+Los lenguajes que admiten diferentes tipos de dato para el retorno de una función, pueden prestarse a inconsistencias sorpresivas:
+``` javascript
+function findTheBiggestNumber(numbers){
+  if (numbers == null){
+    return "Numbers can't be null";
+  }
+  if (numbers.length == 0){
+    return "0";
+  }
+  return Math.max(...numbers);
+}
+```
+
+En este ejemplo, la función devuelve en unos casos una cadena de caracteres; en otros, el cero como cadena; y en los casos restantes, un tipo numérico. Definitivamente, es una forma de poner en un apuro a quien vaya a utilizar esta función, y por supuesto, una sorpresa para quien se encuentra llamadas a esta función por el código. El efecto que estas inconsistencias provocan en el proyecto es la proliferación de código defensivo por todas partes:
+
+``` javascript
+//Código Defensivo
+if (typeof(number) != "undefined"){
+  if (typeof(number) == "number" && !isNaN(number)){
+  ...
+  } else if (typeof(number) == "string" && number !== null){
+  ...
+  } else {
+  ...
+  }
+}
+```
+
+**La programación defensiva tiene sentido en los límites de nuestro sistema**, es decir, en aquellas partes que interconectan nuestro código con el de terceros, porque no tenemos control sobre el exterior. Para código que está a nuestro cargo, lo deseable es tener el control y confiar en la consistencia de los artefactos que construimos.
+
+Por otra parte, tanto lenguajes dinámicos como estáticos, suelen ofrecer la posibilidad de extender el sistema base con nuestros propios extras. Suena tentador añadir nuestros propios métodos al objeto String, pero ¿quién se va a esperar que estén alojados ahí?, ¿cómo de compatible será con otros módulos de nuestro propio software?, y ¿qué sucede si en el futuro el propio sistema añade una función con el mismo nombre? Nos arriesgamos a perder la confianza en el propio sistema base, o sea, todavía peor que desconfiar de nuestro código.
+
+Las sorpresas suelen tener relación con efectos secundarios inesperados como cambios de estado ¿Ves algún problema en el siguiente bloque de código?
+``` java
+for (File file: files){
+  if (hasValidFormat(file)){
+    validFormatFiles.add(file);
+}
+}
+```
+
+Parece un código que explora una serie de ficheros y guarda en una variable aquellos con un formato válido. Debería ser inocuo, pero cuando entramos a mirar los detalles descubrimos lo siguiente:
+
+```java
+boolean hasValidFormat(File file){
+  List<String> lines = read(file);
+  for(String line: lines){
+    if (!hasValidFormat(line)){
+      delete(file);
+      return false;
+    }
+  }
+  return true;
+}
+```
+
+¡Agüita! Una función que debería limitarse a decirnos, «verdadero o falso», ¡está borrando ficheros del disco!, ¡sooorpresaaaaa!
+
+Un sistema compuesto por múltiples subsistemas puede albergar comportamientos asombrosos, fruto de la interconexión de sus piezas. Las condiciones de carrera o los bloqueos mutuos son sorpresas clásicas en artefactos concurrentes de un sistema mal diseñado. Por eso, las arquitecturas y las infraestructuras software también deben ser cuestionadas en cuanto a su capacidad para sorprender. Los mecanismos de caché de datos, a menudo son motivo de sorpresa, sobre todo si los
+encontramos en sistemas en los que nadie sospecha que sea necesario almacenar en caché. La sorpresa puede estar a la hora de guardar, de borrar o de actualizar. Cuando exista la necesidad de apoyarse en memoria caché, conviene que el código sea lo más explícito posible expresando este comportamiento.
